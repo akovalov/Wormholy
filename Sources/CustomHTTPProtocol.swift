@@ -9,6 +9,7 @@
 import Foundation
 
 public class CustomHTTPProtocol: URLProtocol {
+    public static var restricted: Bool = false
     static var ignoredHosts = [String]()
     @available(*, deprecated, renamed: "ignoredHosts")
     static var blacklistedHosts: [String] {
@@ -50,6 +51,11 @@ public class CustomHTTPProtocol: URLProtocol {
     }
     
     override public func startLoading() {
+        if CustomHTTPProtocol.restricted {
+            let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Restricted"])
+            client?.urlProtocol(self, didFailWithError: error)
+            return
+        }
         let newRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         CustomHTTPProtocol.setProperty(true, forKey: Constants.RequestHandledKey, in: newRequest)
         sessionTask = session?.dataTask(with: newRequest as URLRequest)
