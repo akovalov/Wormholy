@@ -65,5 +65,28 @@ class ViewController: UIViewController {
             print("ERROR: api Get photos")
         }
     }
-}
 
+    @IBAction func exportRequestsToFileButtonPressed(_ sender: UIButton) {
+        let fileURL = FileManager.default
+            .urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("requests.json")
+        Wormholy.exportRequests(to: fileURL) { [weak self] error in
+            if let error {
+                print("Export failed with Error: \(error)")
+            } else {
+                print("Exported to \(fileURL)")
+                self?.verifyRequests(in: fileURL)
+            }
+        }
+    }
+
+    private func verifyRequests(in fileURL: URL) {
+        do {
+            let data = try Data(contentsOf: fileURL)
+            let requestModel = try JSONDecoder().decode([RequestModel].self, from: data)
+            print("Loaded RequestModel: \(requestModel)")
+        } catch {
+            print("Failed to load or decode file: \(error)")
+        }
+    }
+}

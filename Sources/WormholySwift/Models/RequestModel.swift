@@ -8,24 +8,24 @@
 import Foundation
 import UIKit
 
-internal class RequestModel: Hashable, Decodable, ObservableObject {
-    internal let id: String
-    internal let url: String
-    internal let host: String?
-    internal let port: Int?
-    internal let scheme: String?
-    internal let startDate: Date
-    internal let method: String
-    internal let headers: [String: String]
-    @Published internal private(set) var credentials: [String : String]
-    @Published internal private(set) var cookies: String?
-    @Published internal private(set) var httpBody: Data?
-    @Published internal private(set) var code: Int
-    @Published internal private(set) var responseHeaders: [String: String]?
-    @Published internal private(set) var dataResponse: Data?
-    @Published internal private(set) var errorClientDescription: String?
-    @Published internal private(set) var duration: Double?
-    
+public class RequestModel: Hashable, Codable, ObservableObject {
+    public let id: String
+    public let url: String
+    public let host: String?
+    public let port: Int?
+    public let scheme: String?
+    public let startDate: Date
+    public let method: String
+    public let headers: [String: String]
+    @Published public private(set) var credentials: [String : String]
+    @Published public private(set) var cookies: String?
+    @Published public private(set) var httpBody: Data?
+    @Published public private(set) var code: Int
+    @Published public private(set) var responseHeaders: [String: String]?
+    @Published public private(set) var dataResponse: Data?
+    @Published public private(set) var errorClientDescription: String?
+    @Published public private(set) var duration: Double?
+
     // Variables for network statistics
     @Published public private(set) var requestStartDate: Date?
     @Published public private(set) var requestEndDate: Date?
@@ -41,8 +41,8 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
     enum CodingKeys: String, CodingKey {
         case id, url, host, port, scheme, startDate, method, headers, credentials, cookies, httpBody, code, responseHeaders, dataResponse, errorClientDescription, duration
     }
-    
-    required init(from decoder: Decoder) throws {
+
+    required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
         url = try container.decode(String.self, forKey: .url)
@@ -61,7 +61,27 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
         errorClientDescription = try container.decodeIfPresent(String.self, forKey: .errorClientDescription)
         duration = try container.decodeIfPresent(Double.self, forKey: .duration)
     }
-    
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(url, forKey: .url)
+        try container.encode(host, forKey: .host)
+        try container.encode(port, forKey: .port)
+        try container.encode(scheme, forKey: .scheme)
+        try container.encode(startDate, forKey: .startDate)
+        try container.encode(method, forKey: .method)
+        try container.encode(headers, forKey: .headers)
+        try container.encode(credentials, forKey: .credentials)
+        try container.encode(cookies, forKey: .cookies)
+        try container.encode(httpBody, forKey: .httpBody)
+        try container.encode(code, forKey: .code)
+        try container.encode(responseHeaders, forKey: .responseHeaders)
+        try container.encode(dataResponse, forKey: .dataResponse)
+        try container.encode(errorClientDescription, forKey: .errorClientDescription)
+        try container.encode(duration, forKey: .duration)
+    }
+
     init(request: NSURLRequest, session: URLSession?) {
         id = UUID().uuidString
         url = request.url?.absoluteString ?? ""
@@ -74,7 +94,7 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
         var headers = request.allHTTPHeaderFields ?? [:]
         httpBody = request.httpBody
         code = 0
-        
+
         // collect all HTTP Request headers except the "Cookie" header. Many request representations treat cookies with special parameters or structures. For cookie collection, refer to the bottom part of this method
         session?.configuration.httpAdditionalHeaders?
             .filter {  $0.0 != AnyHashable("Cookie") }
@@ -83,7 +103,7 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
                 headers[key] = value
         }
         self.headers = headers
-        
+
         // if the target server uses HTTP Basic Authentication, collect username and password
         if let credentialStorage = session?.configuration.urlCredentialStorage,
             let host = self.host,
@@ -103,7 +123,7 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
                 }
             }
         }
-        
+
         //  collect cookies associated with the target host
         //  TODO: Add the else branch.
         /*  With the condition below, it is handled only the case where session.configuration.httpShouldSetCookies == true.
@@ -120,7 +140,7 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
             }
         }
     }
-    
+
     // Initializer for mocking purposes
     init(id: String = UUID().uuidString,
          url: String,
@@ -155,7 +175,7 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
         self.errorClientDescription = errorClientDescription
         self.duration = duration
     }
-    
+
     func initResponse(response: URLResponse) {
         guard let responseHttp = response as? HTTPURLResponse else {return}
         DispatchQueue.main.async {
@@ -163,7 +183,7 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
             self.responseHeaders = responseHttp.allHeaderFields as? [String: String]
         }
     }
-    
+
     // This method is used to update the properties of the RequestModel instance.
     // It ensures that changes are published from the main thread, which is necessary
     // because publishing changes from background threads is not allowed.
@@ -246,15 +266,15 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
             }
         }
     }
-    
-    static func == (lhs: RequestModel, rhs: RequestModel) -> Bool {
+
+    public static func == (lhs: RequestModel, rhs: RequestModel) -> Bool {
         return lhs.id == rhs.id
     }
-    
-    func hash(into hasher: inout Hasher) {
+
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
-    
+
     var curlRequest: String {
         var components = ["$ curl -v"]
 
@@ -267,7 +287,7 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
         if method != "GET" {
             components.append("-X \(method)")
         }
-        
+
         components += headers.map {
             let escapedValue = String(describing: $0.value).replacingOccurrences(of: "\"", with: "\\\"")
             return "-H \"\($0.key): \(escapedValue)\""
@@ -281,11 +301,11 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
 
             components.append("-d \"\(escapedBody)\"")
         }
-        
+
         for credential in credentials {
             components.append("-u \(credential.0):\(credential.1)")
         }
-        
+
         if let cookies = cookies {
             components.append("-b \"\(cookies[..<cookies.index(before: cookies.endIndex)])\"")
         }
@@ -294,38 +314,38 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
 
         return components.joined(separator: " \\\n\t")
     }
-    
+
     var postmanItem: PMItem? {
         guard
             let url = URL(string: self.url),
             let scheme = self.scheme,
             let host = self.host
             else { return nil }
-        
+
         let dateFormatterGet = DateFormatter()
         dateFormatterGet.dateFormat = "yyyyMMdd_HHmmss"
-        
+
         let name = "\(dateFormatterGet.string(from: startDate))-\(url)"
-        
+
         var headers: [PMHeader] = []
         let method = self.method
         for header in self.headers {
             headers.append(PMHeader(key: header.0, value: header.1))
         }
-        
+
         var rawBody: String = ""
         if let httpBodyData = httpBody, let httpBody = String(data: httpBodyData, encoding: .utf8) {
             rawBody = httpBody
         }
-        
+
         let hostList = host.split(separator: ".")
             .map{ String(describing: $0) }
-        
+
         var pathList = url.pathComponents
         pathList.removeFirst()
 
         let body = PMBody(mode: "raw", raw: rawBody)
-        
+
         let query: [PMQuery]? = url.query?.split(separator: "&").compactMap{ element in
             let splittedElements = element.split(separator: "=")
             guard splittedElements.count == 2 else { return nil }
@@ -336,13 +356,13 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
 
         let urlPostman = PMURL(raw: url.absoluteString, urlProtocol: scheme, host: hostList, path: pathList, query: query)
         let request = PMRequest(method: method, header: headers, body: body, url: urlPostman, description: "")
-        
+
         // build response
-        
+
         let responseHeaders = self.responseHeaders?.compactMap{ (key, value) in
             return PMHeader(key: key, value: value)
         } ?? []
-        
+
         let responseBody: String
         if let data = dataResponse, let string = String(data: data, encoding: .utf8) {
             responseBody = string
@@ -350,9 +370,9 @@ internal class RequestModel: Hashable, Decodable, ObservableObject {
         else {
             responseBody = ""
         }
-        
+
         let response = PMResponse(name: url.absoluteString, originalRequest: request, status: "", code: code, postmanPreviewlanguage: "html", header: responseHeaders, cookie: [], body: responseBody)
-        
+
         return PMItem(name: name, item: nil, request: request, response: [response])
     }
 }

@@ -42,4 +42,21 @@ internal class Storage: NSObject, ObservableObject {
     internal func clearRequests() {
         requests.removeAll()
     }
+
+    internal func export(to fileURL: URL, completion: @escaping (_ error: Error?) -> Void) {
+
+        let requests = requests
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            do {
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = .prettyPrinted
+                let jsonData = try encoder.encode(requests)
+
+                try jsonData.write(to: fileURL)
+                completion(nil)
+            } catch {
+                completion(error)
+            }
+        }
+    }
 }

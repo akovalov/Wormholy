@@ -157,3 +157,12 @@ extension Wormholy {
         return isEnabled
     }
 }
+
+extension Wormholy {
+
+    /// Writes requests array to a file in a background queue
+    @MainActor public static func exportRequests(to fileURL: URL, completion: @escaping (_ error: Error?) -> Void) {
+
+        Storage.shared.export(to: fileURL, completion: completion)
+    }
+}
