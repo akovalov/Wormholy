@@ -10,3 +10,4 @@ import Foundation
 
 //Notifications
 let fireWormholy = NSNotification.Name(rawValue: "wormholy_fire")
+let exportWormholy = NSNotification.Name(rawValue: "wormholy_export")

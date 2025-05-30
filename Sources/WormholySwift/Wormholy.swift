@@ -59,6 +59,9 @@ public class Wormholy: NSObject
         NotificationCenter.default.addObserver(forName: fireWormholy, object: nil, queue: nil) { (notification) in
             Wormholy.presentWormholyFlow()
         }
+        NotificationCenter.default.addObserver(forName: exportWormholy, object: nil, queue: nil) { (notification) in
+            Wormholy.exportRequests()
+        }
     }
     
     /// Method to initialize Wormholy with default settings
@@ -160,9 +163,17 @@ extension Wormholy {
 
 extension Wormholy {
 
-    /// Writes requests array to a file in a background queue
-    @MainActor public static func exportRequests(to fileURL: URL, completion: @escaping (_ error: Error?) -> Void) {
+    /// Writes requests array to a file in a background queue at Documents/network_requests.json
+    @MainActor public static func exportRequests() {
 
-        Storage.shared.export(to: fileURL, completion: completion)
+        let fileName = "network_requests.json"
+        let documentsDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let fileURL = documentsDirectory.appendingPathComponent(fileName)
+
+        Storage.shared.export(to: fileURL) { error in
+            if let error {
+                print(error)
+            }
+        }
     }
 }
