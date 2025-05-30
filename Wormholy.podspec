@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Wormholy"
-  s.version      = "2.0.0"
+  s.version      = "2.1.1"
   s.summary      = "Network debugging made easy"
   s.description  = <<-DESC
     Start debugging iOS network calls like a wizard, without extra code! Wormholy makes debugging quick and reliable.
@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
   s.homepage     = "https://github.com/pmusolino/Wormholy"
   s.license      = { :type => "MIT", :file => "LICENSE" }
   s.author             = { "Paolo Musolino" => "info@codeido.com" }
-  s.social_media_url   = "https://x.com/pmusolino"
+  s.social_media_url   = "https://www.x.com/pmusolino"
   s.ios.deployment_target = "16.0"
   s.source       = { :git => "https://github.com/pmusolino/Wormholy.git", :tag => s.version.to_s }
   s.swift_version = "5.0"
