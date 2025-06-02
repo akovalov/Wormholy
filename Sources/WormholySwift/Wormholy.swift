@@ -184,6 +184,12 @@ extension Wormholy {
 
         let requests = Storage.shared.requests.filter { $0.url.contains(endpoint) }
         guard let data = try? JSONEncoder().encode(requests) else { return }
-        UIPasteboard.general.setData(data, forPasteboardType: "io.skypath")
+        do {
+            let data = try JSONSerialization.data(withJSONObject: requests, options: [.fragmentsAllowed, .withoutEscapingSlashes])
+            let json = String(data: data, encoding: .utf8)
+            UIPasteboard.general.string = json
+        } catch {
+            print(error)
+        }
     }
 }
