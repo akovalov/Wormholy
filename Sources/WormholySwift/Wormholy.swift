@@ -183,6 +183,6 @@ extension Wormholy {
     @MainActor public static func copyRequests(endpoint: String) {
 
         let requests = Storage.shared.requests.filter { $0.url.contains(endpoint) }
-        UIPasteboard.general.items.append(["endpoint": endpoint, "requests": requests])
+        UIPasteboard.general.setValue(requests, forPasteboardType: "io.skypath")
     }
 }
