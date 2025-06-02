@@ -167,12 +167,12 @@ extension Wormholy {
     @MainActor public static func exportRequests() {
 
         let fileName = "network_requests.json"
-        let documentsDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let fileURL = documentsDirectory.appendingPathComponent(fileName)
+        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let fileURL = dir.appendingPathComponent(fileName)
 
         Storage.shared.export(to: fileURL) { error in
             if let error {
-                print(error)
+                print("Wormholy export requests failed with error: \(error)")
             }
         }
     }
