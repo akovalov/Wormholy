@@ -67,17 +67,7 @@ class ViewController: UIViewController {
     }
 
     @IBAction func exportRequestsToFileButtonPressed(_ sender: UIButton) {
-        let fileURL = FileManager.default
-            .urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("requests.json")
-        Wormholy.exportRequests(to: fileURL) { [weak self] error in
-            if let error {
-                print("Export failed with Error: \(error)")
-            } else {
-                print("Exported to \(fileURL)")
-                self?.verifyRequests(in: fileURL)
-            }
-        }
+        Wormholy.exportRequests()
     }
 
     private func verifyRequests(in fileURL: URL) {
