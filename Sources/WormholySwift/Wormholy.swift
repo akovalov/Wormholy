@@ -60,7 +60,8 @@ public class Wormholy: NSObject
             Wormholy.presentWormholyFlow()
         }
         NotificationCenter.default.addObserver(forName: exportWormholy, object: nil, queue: nil) { (notification) in
-            Wormholy.exportRequests()
+            guard let fileUrl = notification.object as? URL else { return }
+            Wormholy.exportRequests(to: fileUrl)
         }
     }
     
@@ -165,32 +166,13 @@ extension Wormholy {
 
 extension Wormholy {
 
-    static private var exportFileUrl: URL {
-        let fileName = "network_requests.json"
-        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let fileURL = dir.appendingPathComponent(fileName)
-        return fileURL
-    }
-
     /// Writes requests array to a file in a background queue at Documents/network_requests.json
-    @MainActor public static func exportRequests() {
+    @MainActor public static func exportRequests(to fileUrl: URL) {
 
-        removeExportedFile()
-        Storage.shared.export(to: exportFileUrl) { error in
+        Storage.shared.export(to: fileUrl) { error in
             if let error {
                 print("Wormholy export requests failed with error: \(error)")
             }
-        }
-    }
-
-    public static func removeExportedFile() {
-
-        guard FileManager.default.fileExists(atPath: exportFileUrl.path) else { return }
-
-        do {
-            try FileManager.default.removeItem(at: exportFileUrl)
-        } catch {
-            print("Wormholy failed to remove exported file with error: \(error)")
         }
     }
 }
