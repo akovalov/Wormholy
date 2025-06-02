@@ -63,6 +63,10 @@ public class Wormholy: NSObject
             guard let fileUrl = notification.object as? URL else { return }
             Wormholy.exportRequests(to: fileUrl)
         }
+        NotificationCenter.default.addObserver(forName: copyWormholy, object: nil, queue: nil) { (notification) in
+            guard let endpoint = notification.userInfo?["endpoint"] as? String else { return }
+            Wormholy.copyRequests(endpoint: endpoint)
+        }
     }
     
     /// Method to initialize Wormholy with default settings
@@ -174,5 +178,11 @@ extension Wormholy {
                 print("Wormholy export requests failed with error: \(error)")
             }
         }
+    }
+
+    @MainActor public static func copyRequests(endpoint: String) {
+
+        let requests = Storage.shared.requests.filter { $0.url.contains(endpoint) }
+        UIPasteboard.general.items.append(["endpoint": endpoint, "requests": requests])
     }
 }
